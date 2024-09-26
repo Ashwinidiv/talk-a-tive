@@ -44,7 +44,7 @@ const Login = () => {
       };
       const { data } = await apiRequest.post(
         "/user/login",
-        { email, password, pic },
+        { email, password },
         config
       );
       toast({

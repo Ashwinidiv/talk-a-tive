@@ -58,14 +58,13 @@ const allUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search
     ? {
         $or: [
-          { name: { $regex: req.query.search, $option: "i" } },
-          { email: { $regex: req.query.search, $option: "i" } },
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
         ],
+        _id: { $ne: req.user._id },
       }
     : {};
-  const users = (await User.find(keyword)).findIndex({
-    _id: { $ne: req.user._id },
-  });
+  const users = await User.find(keyword);
   res.send(users);
 });
 

@@ -12,6 +12,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Spinner,
   Text,
   Toast,
   Tooltip,
@@ -25,6 +26,7 @@ import { ChatState } from "../../context/ChatProvider";
 import ProfileModal from "./ProfileModal";
 import { useNavigate } from "react-router-dom";
 import ChatLoading from "../ChatLoading";
+import UserListItem from "../userAvatar/UserListItem";
 
 const SideDrawer = () => {
   const [search, setSearch] = useState("");
@@ -32,7 +34,7 @@ const SideDrawer = () => {
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState();
 
-  const { user } = ChatState();
+  const { user, setSelectedChat, chats, setChats } = ChatState();
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -76,7 +78,31 @@ const SideDrawer = () => {
     }
   };
 
-  const accessChat = (userId) => {};
+  const accessChat = async (userId) => {
+    try {
+      setLoadingChat(true);
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      const { data } = await apiRequest.post(`/chat`, { userId }, config);
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+      setSelectedChat(data);
+      setLoadingChat(false);
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error In Fetching the Chats",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
+    }
+  };
 
   return (
     <>
@@ -158,6 +184,7 @@ const SideDrawer = () => {
                 />
               ))
             )}
+            {loadingChat && <Spinner ml="auto" display="flex" />}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
